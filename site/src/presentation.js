@@ -4,11 +4,11 @@ const TAU=Math.PI*2,clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v)),hash=n=>((Math.
 const rgb=h=>{let n=parseInt(h.slice(1),16);return[(n>>16)&255,(n>>8)&255,n&255]},rgba=(h,a)=>`rgba(${rgb(h).join(',')},${a})`;
 export function createPresentation(canvas,options={}){
  let W=1600,H=900,dpr=1,time=0,intensity=0,muted=false,volume=.8,dead=false,flashA=0,flashColor=PALETTE.white,shakeP=0,shakeT=0,shakeD=1,wave=0,loop=0;
- const osReduced=typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;let reduced=osReduced;const cameraOffset={x:0,y:0},parts=[],trails=new Map(),MAX=650;
+ const osReduced=typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;let reduced=osReduced;const cameraOffset={x:0,y:0},parts=[],trails=new Map();
  const dust=Array.from({length:70},(_,i)=>({x:hash(i*3),y:hash(i*3+1),s:.4+hash(i*3+2)*1.6,p:hash(i+99)*TAU}));
  let ac,master,music,sfx,noiseBuf,nextBeat=0,beat=0;
  function resize(w,h,p){W=w||canvas?.clientWidth||1600;H=h||canvas?.clientHeight||900;dpr=p||Math.min(2,globalThis.devicePixelRatio||1)}resize();
- function add(x,y,vx,vy,life,size,color,kind='dot',drag=.92){if(parts.length>=MAX)parts.splice(0,30);parts.push({x,y,px:x,py:y,vx,vy,life,max:life,size,color,kind,drag,rot:Math.random()*TAU,spin:(Math.random()-.5)*9})}
+ function add(x,y,vx,vy,life,size,color,kind='dot',drag=.92){let cap=reduced?180:650;if(parts.length>=cap)parts.splice(0,30);parts.push({x,y,px:x,py:y,vx,vy,life,max:life,size,color,kind,drag,rot:Math.random()*TAU,spin:(Math.random()-.5)*9})}
  function burst(x,y,n,c,s=180,k='spark',z=3){n=reduced?Math.ceil(n*.4):n;for(let i=0;i<n;i++){let a=Math.random()*TAU,v=s*(.25+Math.random()*.75);add(x,y,Math.cos(a)*v,Math.sin(a)*v,.25+Math.random()*.45,z*(.5+Math.random()),c,k,.9)}}
  function emit(type,x,y,o={}){let c=o.color||({shoot:PALETTE.cyan,hit:PALETTE.white,kill:PALETTE.coral,dash:PALETTE.cyan,spawn:PALETTE.coral,pickup:PALETTE.gold,gate:PALETTE.gold,loopReset:PALETTE.violet,echoSpawn:PALETTE.violet}[type]||PALETTE.cyan);
   if(type==='shoot'){let a=o.angle||0;for(let i=0;i<7;i++){let q=a+(Math.random()-.5)*.45,v=100+Math.random()*220;add(x,y,Math.cos(q)*v,Math.sin(q)*v,.12+Math.random()*.18,2,c,'spark',.86)}}
